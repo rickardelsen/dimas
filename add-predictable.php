@@ -1,19 +1,22 @@
 <?php
     session_start();
-    if(!isset($_GET['id']) && !isset($_SESSION['id-bencana'])){
-        header('Location: predictable.php');
-    }
-    else{
-        if(isset($_GET['id'])){
-            $_SESSION['id-bencana']=$_GET['id'];
-            $id = $_GET['id'];
-        }else{
-            $id = $_SESSION['id-bencana'];
-        }
-    }
-    
     $m = new MongoClient(); // connect
     $db = $m->selectDB("dimas");
+    
+    if(isset($_POST['submit'])){
+        date_default_timezone_set("Asia/Jakarta");
+        $id = uniqid();
+        $inset = "db.Predictable.insert({'id':'".$id."','nama':'".$_POST['nama']."','deskripsi':'".$_POST['deskripsi']."','add-time':'".strtotime(date('Y-m-d H:i:s'))."'});";
+        $response = $db->execute($inset);
+        $x = $_POST['nomor'];
+        $param = $_POST['p'];
+        for($i=0;$i<$x;$i++){
+            if($param[$i]!=""){
+                $inset = "db.Parameter.insert({'id':'".$id."','param':'".$param[$i]."'});";
+                $response = $db->execute($inset);
+            }
+        }
+    }
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -55,7 +58,7 @@
                     <div class="col-lg-12">
                         <ul class="breadcrumb">
                             <li><a href="index.php"><i class="fa fa-home"></i></a><i class="icon-angle-right"></i></li>
-                            <li class="active">Login Form</li>
+                            <li class="active">Tambah Predictable</li>
                         </ul>
                     </div>
                 </div>
@@ -69,38 +72,31 @@
                       
                     </div>
                     <div class="col-lg-8">
-                        <a href="add-sequence.php" class="btn btn-default btn-sm">Tambah Sequence</a>
-                        <table class="table table-bordered">
-                            <tr>
-                                <th>ID</th>
-                                <th>Waktu</th>
-                                <th>Aksi</th>
-                            </tr>
-                            <?php
-                                date_default_timezone_set("Asia/Jakarta");
-                                $collection = $db->Sequence;
-                                $arr = array("id-bencana"=>$id);
-                                $cursor = $collection->find($arr);
-                                $i=0;
-//                                foreach ($cursor as $document) {
-//                                    $param[$i]=$document['param'];
-//                                    $i++;
-//                                }
-                                foreach ($cursor as $document) {
-                                    echo "<tr>";
-                                    echo "<td>".$document['id']."</td>";
-                                    echo "<td>".date("Y-m-d H:i",$document['waktu'])."</td>";
-                                    echo "<td>";
-                                    echo "<form action=\"view.php\" method=\"POST\" enctype=\"multipart/form-data\">";
-                                    echo "<input type=\"hidden\" name=\"id\" value=\"".$document['id']."\"/>";
-                                    echo "<input type=\"submit\" class=\"btn btn-green\" name=\"submit\" value=\"Lihat Viewer\"/>";
-                                    echo "</form>";
-                                    echo "</td>";
-                                    echo "<tr>";
-                                }
-                            ?>
-                        </table>
-                       
+                        
+                        <h3>Tambah Predictable</h3>
+                        <form action="" method="POST" enctype="multipart/form-data">
+                            <div class="alert-danger"><?php if(isset($_SESSION['fail'])){echo $_SESSION['fail'];unset($_SESSION['fail']);}?></div>
+                            
+                            <div class="form-group">
+                                <label for="nama">Nama</label>
+                                <input type="text" name="nama" id="nama" class="form-control" placeholder="Nama Bencana" value="">
+                            </div>
+                            <div class="form-group">
+                                <label for="deskripsi">Deskripsi</label>
+                                <textarea name="deskripsi" id="deskripsi" class="form-control" rows="6"></textarea>
+                            </div>
+                            <div id="dinamis" class="fee">
+                            <input type="hidden" id="number" name="nomor" value="0" />
+                    
+                            <div class="label"></div>
+                            <div class="input">
+                                <input type="button" value="Tambah Parameter" onclick="Add()" />
+                            </div>
+                            </div>
+                            <input type="submit" name="submit" value="Tambah" class="btn btn-blue" />
+                               
+                        </form>   
+                    </div>
                     <div class="col-lg-2"></div>
 		</div>
             </div>
@@ -175,5 +171,29 @@
 <script src="js/jquery.flexslider.js"></script>
 <script src="js/animate.js"></script>
 <script src="js/custom.js"></script>
+<script>
+        
+        
+        function Add(){ 
+            var value = parseInt(document.getElementById('number').value, 10);
+            value = isNaN(value) ? 0 : value;
+            value++;
+            var text = [];
+            if(value>1){
+                for(j=1;j<value;j++){
+                    text[j]=document.getElementById('param'+j).value;
+                }
+            }
+            document.getElementById('number').value = value;
+            document.getElementById('dinamis').innerHTML += "<div class=\"form-group\"><label for=\"parameter\">Parameter "+value+"</label>\n\
+                <input class=\"form-control\" id=\"param"+value+"\" type=\"text\" name=\"p[]\" value=\"\">\n\
+                </div>";
+            if(value>1){
+                for(j=1;j<value;j++){
+                    document.getElementById('param'+j).value=text[j];
+                }
+            }
+        }
+    </script>
 </body>
 </html>

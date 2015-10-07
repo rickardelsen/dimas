@@ -1,39 +1,24 @@
 <?php
     session_start();
-//    if(!isset($_SESSION['user'])){
-//        header('Location:index.php');
-//    }
+    if(!isset($_GET['id']) && !isset($_SESSION['id-jenis'])){
+        header('Location: predictable.php');
+    }
+    else{
+        if(isset($_GET['id'])){
+            $_SESSION['id-jenis']=$_GET['id'];
+            $id = $_GET['id'];
+        }else{
+            $id = $_SESSION['id-jenis'];
+        }
+    }
     $m = new MongoClient(); // connect
     $db = $m->selectDB("dimas");
-    
-    if(isset($_POST['submit'])){
-        date_default_timezone_set("Asia/Jakarta");
-        $pmt = $_POST['param'];
-        $x = count($pmt);
-        $inset = "db.Bencana.insert({'id':'".uniqid()."','jenis':'predictable','nama':'Tornado'";
-        for($i=0;$i<$x;$i++){
-            $inset .= ",'".$pmt[$i]."':'".$_POST[$pmt[$i]]."'";
-        }
-        $inset .= ",'latitude':'".$_POST['lat']."','longitude':'".$_POST['lng']."','waktu':'".$_POST['waktu']."','trans_time':'".date('Y-m-d H:i:s')."'});";
-        $response = $db->execute($inset);
-        header('Location: bencana.php');
-    }
-    
-
-    $collection = $db->Parameter;
-    $arr = array("id"=>"001");
-    $cursor = $collection->find($arr);
-    $i=0;
-    foreach ($cursor as $document) {
-        $param[$i]=$document['param'];
-        $i++;
-    }
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>DiMAS</title>
+<title>Log ITB</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="description" content="" />
 <meta name="author" content="http://bootstraptaste.com" />
@@ -47,87 +32,6 @@
 
 <!-- Theme skin -->
 <link href="skins/default.css" rel="stylesheet" />
-<style type="text/css">
-        body {
-            height: 100%;
-            background: url('img/ticks.png');
-
-        }
-
-        .box h3{
-            text-align:center;
-            position:relative;
-            top:80px;
-        }
-        .box {
-            width:70%;
-            height:200px;
-            background:#FFF;
-            margin:40px auto;
-            border: 5px;
-        }
-
-
-        #mapCanvas {
-            width: auto;
-            height: 400px;
-
-        }
-        .tengah { float: none; margin-left: auto; margin-right: auto; }
-        .boxcari { width: 400px }
-
-        footer {
-              color: #666;
-              background: #222;
-              padding: 17px 0 18px 0;
-              border-top: 1px solid #000;
-          }
-          footer a {
-              color: #999;
-          }
-          footer a:hover {
-              color: #efefef;
-          }
-          .wrapper {
-              min-height: 100%;
-              height: auto !important;
-              height: 100%;
-              margin: 0 auto -63px;
-          }
-          .push {
-              height: 63px;
-          }
-          /* not required for sticky footer; just pushes hero down a bit */
-          .wrapper > .container {
-              padding-top: 60px;
-          }
-        .profilpic {
-
-            -moz-box-shadow: 0 0 5px 5px #888;
-            -webkit-box-shadow: 0 0 5px 5px#888;
-            box-shadow: 0 0 5px 5px #888;
-
-        }
-
-        .map_canvas { 
-            width: 100%; 
-            height: 400px; 
-            margin: 10px 0 10px 0;
-            border: 10px solid #FFF;
-        }
-
-        .map_canvas:after{
-            content: "Type in an address in the input above.";
-            padding-top: 170px;
-            display: block;
-            text-align: center;
-            font-size: 2em;
-            color: #999;
-        }
-    </style>
-    <script type="text/javascript" src="js/jquery.js"></script>
-    <script type="text/javascript" src="js/main.js"></script>
-    <script src="http://maps.googleapis.com/maps/api/js?sensor=false&amp;libraries=places"></script>
 
 <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
 <!--[if lt IE 9]>
@@ -150,7 +54,7 @@
                     <div class="col-lg-12">
                         <ul class="breadcrumb">
                             <li><a href="index.php"><i class="fa fa-home"></i></a><i class="icon-angle-right"></i></li>
-                            <li class="active">Letusan Gunung</li>
+                            <li class="active">Login Form</li>
                         </ul>
                     </div>
                 </div>
@@ -164,67 +68,41 @@
                       
                     </div>
                     <div class="col-lg-8">
-                        <h3>Letusan Gunung</h3>
-                        <form action="" method="POST" enctype="multipart/form-data">
+                        <a href="add-bencana.php" class="btn btn-default btn-sm">Tambah Bencana</a>
+                        <table class="table table-bordered">
+                            <tr>
+                                <th>ID</th>
+                                <th>Nama</th>
+                                <th>Aksi</th>
+                            </tr>
                             <?php
-                                $x = count($param);
-                                for($i=0;$i<$x;$i++){
-                                    echo "<input type=\"hidden\" name=\"param[]\" value=".$param[$i]." />";
-                                }
-                                for($i=0;$i<$x;$i++){
-                                    echo "<div class=\"form-group\">";
-                                    echo "<label for=\"".$param[$i]."\">".$param[$i]."</label>";
-                                    echo "<input type=\"text\" name=\"".$param[$i]."\" id=\"".$param[$i]."\" class=\"form-control\" placeholder=\"".$param[$i]."\" value=\"\">";
-                                    echo "</div>";
+                                $collection = $db->Bencana;
+                                $arr = array("id-jenis"=>$id);
+                                $cursor = $collection->find($arr);
+                                $i=0;
+//                                foreach ($cursor as $document) {
+//                                    $param[$i]=$document['param'];
+//                                    $i++;
+//                                }
+                                foreach ($cursor as $document) {
+                                    
+                                    ?>
+                                    <tr>
+                                    <td><?php echo $document['id']; ?></td>
+                                    <td><?php echo $document['nama']; ?></td>
+                                    <td>
+                                    
+                                    <a href="MovingArea.php?id=<?php echo $document['id']; ?>" class="btn btn-dark btn-sm">Go to Viewer</a>
+                                    <a href="sequence.php?id=<?php echo $document['id']; ?>" class="btn btn-green btn-sm">Lihat Sequence</a>
+                                    <a href="add-sequence.php?id=<?php echo $document['id']; ?>" class="btn btn-blue btn-sm">Tambah Sequence</a>
+                                    
+                                    </td>
+                                    <tr>
+                                    <?php
                                 }
                             ?>
-                            <div class="form-group">
-                                <label for="geocomplete">Cari Lokasi</label>
-                                <input id="geocomplete" type="text" class="form-control" placeholder="Type in an address" value="<?php
-                            $latitude = "-6.892131824694046";
-                            $longitude = "107.60981023822023";
-                            if ($longitude == "107.60981023822023" )
-                              {
-                              echo "Bandung";
-                              }
-                              else
-                              {
-                              echo $r['lat'] . "," . $r['lng'];
-                              }
-                            ?>" />
-                                <input id="find" type="button" class="btn btn-blue" value="Cari" />
-                             </div> 
-                            
-
-                           
-
-                            <div class="map_canvas"></div>
-
-                            <input type="hidden" id="latitude" name="lat" value="" >
-                            <input type="hidden" id="longitude" name="lng" value="" >
-                            <fieldset>
-                                 <div class="form-group">
-                                    <label for="Latitude">Latitude</label>
-                                    <input type="text" name="lat" id="Latitude" class="form-control" placeholder="Latitude" value="<?php echo $latitude;?>">
-                                 </div>   
-                                 <div class="form-group">
-                                    <label for="Longitude">Longitude</label>
-                                    <input type="text" name="lng" id="Longitude" class="form-control" placeholder="Longitude" value="<?php echo $longitude;?>">
-                                 </div>
-                                 <div class="form-group">
-                                    <label for="formatted_address">Formatted Address</label>
-                                    <input type="text" name="formatted_address" id="formatted_address" class="form-control" placeholder="Formatted Address" value="">
-                                 </div>
-                                
-                            </fieldset>
-                            <div class="form-group">
-                                <label for="datetimepicker_dark">Waktu</label>
-                                <input type="text" name="waktu" id="datetimepicker_dark" class="form-control" autocomplete="off"/>
-                             </div>  
-                            
-                           <input class="btn btn-default" type="submit" name="submit" value="Submit"> <br /><br />
-                        </form>
-                    </div>
+                        </table>
+                       
                     <div class="col-lg-2"></div>
 		</div>
             </div>
@@ -299,54 +177,5 @@
 <script src="js/jquery.flexslider.js"></script>
 <script src="js/animate.js"></script>
 <script src="js/custom.js"></script>
-<script src="js/jquery.geocomplete.js"></script>
-<link rel="stylesheet" type="text/css" href="css/jquery.datetimepicker.css"/>
-    <script src="js/logger.js"></script>
-    <script src="js/jquery.datetimepicker.js"></script>
-  <script type="text/javascript">
-
-    $(document).ready(function () {
-        $('#myModal').on('shown', function () {
-            initialize();
-        });
-    })
-</script>
-    <script>
-  var iconBase = 'img/home.png';
- 
-      $(function(){
-        $("#geocomplete").geocomplete({
-          map: ".map_canvas",
-          
-          mapOptions: {
-            scrollwheel : true
-          },
-          details: "form ",
-          markerOptions: {
-           
-             icon: iconBase,
-            draggable: true
-          }
-        });
-        
-        $("#geocomplete").bind("geocode:dragged", function(event, latLng){
-          $("input[name=lat]").val(latLng.lat());
-          $("input[name=lng]").val(latLng.lng());
-          $("#reset").show();
-        });
-        
-        
-        $("#reset").click(function(){
-          $("#geocomplete").geocomplete("resetMarker");
-          $("#reset").hide();
-          return false;
-        });
-        
-        $("#find").click(function(){
-          $("#geocomplete").trigger("geocode");
-        }).click();
-      });
-      $('#datetimepicker_dark').datetimepicker({theme:'dark'})
-    </script>
 </body>
 </html>

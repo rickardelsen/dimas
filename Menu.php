@@ -17,7 +17,8 @@
                 <div class="navbar-collapse collapse ">
                     <ul class="nav navbar-nav">
                         <li><a href="index.php">Home</a></li>
-                        <li><a href="about.php">About</a></li>
+                        <li><a href="predictable.php">Predictable</a></li>
+                        <li><a href="unpredictable.php">Unpredictable</a></li>
                         <?php
                             if(isset($_SESSION['username'])){
                                 echo "<li><a href=\"logout.php\">Logout</a></li>";

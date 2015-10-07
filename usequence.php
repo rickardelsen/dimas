@@ -69,7 +69,7 @@
                       
                     </div>
                     <div class="col-lg-8">
-                        <a href="add-sequence.php" class="btn btn-default btn-sm">Tambah Sequence</a>
+                        <a href="add-usequence.php" class="btn btn-default btn-sm">Tambah Sequence</a>
                         <table class="table table-bordered">
                             <tr>
                                 <th>ID</th>

@@ -1,17 +1,37 @@
 <?php
     session_start();
-    if(isset($_POST['view'])){
-        $_SESSION['id']=$_POST['id'];
-        header("Location: sequence.php");
+    if(!isset($_GET['id']) && !isset($_SESSION['id-jenis'])){
+        header('Location: predictable.php');
     }
-//    if(!isset($_SESSION['user'])){
-//        header('Location:index.php');
-//    }
+    else{
+        if(isset($_GET['id'])){
+            $_SESSION['id-jenis']=$_GET['id'];
+            $id = $_GET['id'];
+        }else{
+            $id = $_SESSION['id-jenis'];
+        }
+    }
     $m = new MongoClient(); // connect
     $db = $m->selectDB("dimas");
+    $collection = $db->Predictable;
+    $arr = array("id"=>$id);
+    $cursor = $collection->find($arr);
+    $i=0;
+    foreach ($cursor as $document) {
+        $nama=$document['nama'];
+        $i++;
+    }
+    if(isset($_POST['tambah'])){
+        date_default_timezone_set("Asia/Jakarta");
+        $pmt = $_POST['param'];
+        $x = count($pmt);
+        $inset = "db.Bencana.insert({'id':'".uniqid()."','id-jenis':'".$id."','nama':'".$_POST['nama']."','deskripsi':'".$_POST['deskripsi']."'";
+        $inset .= ",'latitude':'".$_POST['lat']."','longitude':'".$_POST['lng']."','waktu':'".strtotime($_POST['waktu'])."','trans_time':'".date('Y-m-d H:i:s')."'});";
+        $response = $db->execute($inset);
+        header('Location: bencana.php');
+    }
     
-    $collection = $db->Bencana;
-    $cursor = $collection->find();
+
     
 ?>
 <!DOCTYPE html>
@@ -135,7 +155,7 @@
                     <div class="col-lg-12">
                         <ul class="breadcrumb">
                             <li><a href="index.php"><i class="fa fa-home"></i></a><i class="icon-angle-right"></i></li>
-                            <li class="active">Letusan Gunung</li>
+                            <li class="active">Tambah Bencana</li>
                         </ul>
                     </div>
                 </div>
@@ -149,31 +169,62 @@
                       
                     </div>
                     <div class="col-lg-8">
-                        <h3>Letusan Gunung</h3>
-                        <table class="table table-bordered">
-                            <tr>
-                                <th>ID</th>
-                                <th>Nama</th>
-                                <th>Lokasi</th>
-                                <th>Radius</th>
-                                <th>Aksi</th>
-                            </tr>
-                        <?php
-                            $i=0;
-                            foreach ($cursor as $document) {
-                                echo "<tr>";
-                                echo "<td>".$document['id'],"</td>";
-                                echo "<td>".$document['id-bencana'],"</td>";
-                                echo "<td>".$document['Lokasi'],"</td>";
-                                echo "<td>".$document['Radius'],"</td>";
-                                echo "<form action=\"\" method=\"POST\" enctype=\"multipart/form-data\">";
-                                echo "<input type=\"hidden\" name=\"id\" value=\"".$document['id'],"\" />";
-                                echo "<td><input type=\"submit\" name=\"view\" class=\"btn btn-green\" value=\"View\" /></td>";
-                                echo "</form>";
-                                echo "</tr>";
-                            }
-                        ?>
-                    </table>
+                        <h3><?php echo $nama; ?></h3>
+                        <form action="" method="POST" enctype="multipart/form-data">
+                            <div class="form-group">
+                                <label for="nama">Nama</label>
+                                <input type="text" name="nama" id="nama" class="form-control" placeholder="Nama Bencana" value="">
+                            </div>
+                            <div class="form-group">
+                                <label for="deskripsi">Deskripsi</label>
+                                <input type="text" name="deskripsi" id="deskripsi" class="form-control" placeholder="Deskripsi Bencana" value="">
+                            </div>
+                            <div class="form-group">
+                                <label for="geocomplete">Cari Lokasi</label>
+                                <input id="geocomplete" type="text" class="form-control" placeholder="Type in an address" value="<?php
+                            $latitude = "-6.892131824694046";
+                            $longitude = "107.60981023822023";
+                            if ($longitude == "107.60981023822023" )
+                              {
+                              echo "Bandung";
+                              }
+                              else
+                              {
+                              echo $r['lat'] . "," . $r['lng'];
+                              }
+                            ?>" />
+                                <input id="find" type="button" class="btn btn-blue" value="Cari" />
+                             </div> 
+                            
+
+                           
+
+                            <div class="map_canvas"></div>
+
+                            <input type="hidden" id="latitude" name="lat" value="" >
+                            <input type="hidden" id="longitude" name="lng" value="" >
+                            <fieldset>
+                                 <div class="form-group">
+                                    <label for="Latitude">Latitude</label>
+                                    <input type="text" name="lat" id="Latitude" class="form-control" placeholder="Latitude" value="<?php echo $latitude;?>">
+                                 </div>   
+                                 <div class="form-group">
+                                    <label for="Longitude">Longitude</label>
+                                    <input type="text" name="lng" id="Longitude" class="form-control" placeholder="Longitude" value="<?php echo $longitude;?>">
+                                 </div>
+                                 <div class="form-group">
+                                    <label for="formatted_address">Formatted Address</label>
+                                    <input type="text" name="formatted_address" id="formatted_address" class="form-control" placeholder="Formatted Address" value="">
+                                 </div>
+                                
+                            </fieldset>
+                            <div class="form-group">
+                                <label for="datetimepicker_dark">Waktu</label>
+                                <input type="text" name="waktu" id="datetimepicker_dark" class="form-control" autocomplete="off"/>
+                             </div>  
+                            
+                           <input class="btn btn-default" type="submit" name="tambah" value="Tambah"> <br /><br />
+                        </form>
                     </div>
                     <div class="col-lg-2"></div>
 		</div>

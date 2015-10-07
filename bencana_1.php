@@ -1,18 +1,33 @@
 <?php
     session_start();
-    if(isset($_POST['view'])){
-        $_SESSION['id']=$_POST['id'];
-        header("Location: sequence.php");
-    }
 //    if(!isset($_SESSION['user'])){
 //        header('Location:index.php');
 //    }
     $m = new MongoClient(); // connect
     $db = $m->selectDB("dimas");
     
-    $collection = $db->Bencana;
-    $cursor = $collection->find();
+    if(isset($_POST['submit'])){
+        date_default_timezone_set("Asia/Jakarta");
+        $pmt = $_POST['param'];
+        $x = count($pmt);
+        $inset = "db.Bencana.insert({'id':'".uniqid()."','jenis':'predictable','id-bencana':'001'";
+        for($i=0;$i<$x;$i++){
+            $inset .= ",'".$pmt[$i]."':'".$_POST[$pmt[$i]]."'";
+        }
+        $inset .= ",'latitude':'".$_POST['lat']."','longitude':'".$_POST['lng']."','waktu':'".$_POST['waktu']."','trans_time':'".date('Y-m-d H:i:s')."'});";
+        $response = $db->execute($inset);
+        header('Location: bencana.php');
+    }
     
+
+    $collection = $db->Parameter;
+    $arr = array("id"=>"001");
+    $cursor = $collection->find($arr);
+    $i=0;
+    foreach ($cursor as $document) {
+        $param[$i]=$document['param'];
+        $i++;
+    }
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -150,30 +165,65 @@
                     </div>
                     <div class="col-lg-8">
                         <h3>Letusan Gunung</h3>
-                        <table class="table table-bordered">
-                            <tr>
-                                <th>ID</th>
-                                <th>Nama</th>
-                                <th>Lokasi</th>
-                                <th>Radius</th>
-                                <th>Aksi</th>
-                            </tr>
-                        <?php
-                            $i=0;
-                            foreach ($cursor as $document) {
-                                echo "<tr>";
-                                echo "<td>".$document['id'],"</td>";
-                                echo "<td>".$document['id-bencana'],"</td>";
-                                echo "<td>".$document['Lokasi'],"</td>";
-                                echo "<td>".$document['Radius'],"</td>";
-                                echo "<form action=\"\" method=\"POST\" enctype=\"multipart/form-data\">";
-                                echo "<input type=\"hidden\" name=\"id\" value=\"".$document['id'],"\" />";
-                                echo "<td><input type=\"submit\" name=\"view\" class=\"btn btn-green\" value=\"View\" /></td>";
-                                echo "</form>";
-                                echo "</tr>";
-                            }
-                        ?>
-                    </table>
+                        <form action="" method="POST" enctype="multipart/form-data">
+                            <?php
+                                $x = count($param);
+                                for($i=0;$i<$x;$i++){
+                                    echo "<input type=\"hidden\" name=\"param[]\" value=".$param[$i]." />";
+                                }
+                                for($i=0;$i<$x;$i++){
+                                    echo "<div class=\"form-group\">";
+                                    echo "<label for=\"".$param[$i]."\">".$param[$i]."</label>";
+                                    echo "<input type=\"text\" name=\"".$param[$i]."\" id=\"".$param[$i]."\" class=\"form-control\" placeholder=\"".$param[$i]."\" value=\"\">";
+                                    echo "</div>";
+                                }
+                            ?>
+                            <div class="form-group">
+                                <label for="geocomplete">Cari Lokasi</label>
+                                <input id="geocomplete" type="text" class="form-control" placeholder="Type in an address" value="<?php
+                            $latitude = "-6.892131824694046";
+                            $longitude = "107.60981023822023";
+                            if ($longitude == "107.60981023822023" )
+                              {
+                              echo "Bandung";
+                              }
+                              else
+                              {
+                              echo $r['lat'] . "," . $r['lng'];
+                              }
+                            ?>" />
+                                <input id="find" type="button" class="btn btn-blue" value="Cari" />
+                             </div> 
+                            
+
+                           
+
+                            <div class="map_canvas"></div>
+
+                            <input type="hidden" id="latitude" name="lat" value="" >
+                            <input type="hidden" id="longitude" name="lng" value="" >
+                            <fieldset>
+                                 <div class="form-group">
+                                    <label for="Latitude">Latitude</label>
+                                    <input type="text" name="lat" id="Latitude" class="form-control" placeholder="Latitude" value="<?php echo $latitude;?>">
+                                 </div>   
+                                 <div class="form-group">
+                                    <label for="Longitude">Longitude</label>
+                                    <input type="text" name="lng" id="Longitude" class="form-control" placeholder="Longitude" value="<?php echo $longitude;?>">
+                                 </div>
+                                 <div class="form-group">
+                                    <label for="formatted_address">Formatted Address</label>
+                                    <input type="text" name="formatted_address" id="formatted_address" class="form-control" placeholder="Formatted Address" value="">
+                                 </div>
+                                
+                            </fieldset>
+                            <div class="form-group">
+                                <label for="datetimepicker_dark">Waktu</label>
+                                <input type="text" name="waktu" id="datetimepicker_dark" class="form-control" autocomplete="off"/>
+                             </div>  
+                            
+                           <input class="btn btn-default" type="submit" name="submit" value="Submit"> <br /><br />
+                        </form>
                     </div>
                     <div class="col-lg-2"></div>
 		</div>

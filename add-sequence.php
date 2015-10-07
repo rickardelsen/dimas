@@ -1,17 +1,68 @@
 <?php
     session_start();
-    if(isset($_POST['view'])){
-        $_SESSION['id']=$_POST['id'];
-        header("Location: sequence.php");
+    if(!isset($_GET['id']) && !isset($_SESSION['id-bencana'])){
+        header('Location: predictable.php');
     }
-//    if(!isset($_SESSION['user'])){
-//        header('Location:index.php');
-//    }
+    else{
+        if(isset($_GET['id'])){
+            $_SESSION['id-bencana']=$_GET['id'];
+            $id = $_GET['id'];
+        }else{
+            $id = $_SESSION['id-bencana'];
+        }
+    }
+    if(isset($_POST['coords'])){
+        echo $_POST['coords'];
+    }
     $m = new MongoClient(); // connect
     $db = $m->selectDB("dimas");
-    
     $collection = $db->Bencana;
-    $cursor = $collection->find();
+    $arr = array("id"=>$id);
+    $cursor = $collection->find($arr);
+    $i=0;
+    foreach ($cursor as $document) {
+        $lat=$document['latitude'];
+        $lng=$document['longitude'];
+        $lokasi=$document['nama'];
+        $nama=$document['nama'];
+    }
+    $coords = null;
+     
+    
+    
+    if(isset($_POST['simpan'])){
+        date_default_timezone_set("Asia/Jakarta");
+        $pmt = $_POST['param'];
+        $x = count($pmt);
+        $inset = "db.Sequence.insert({'id':'".uniqid()."','id-bencana':'".$id."','id-jenis':'".$_SESSION['id-jenis']."'";
+        for($i=0;$i<$x;$i++){
+            $inset .= ",'".$pmt[$i]."':'".$_POST[$pmt[$i]]."'";
+        }
+        $inset .= ",'coords':'".$_POST['coords']."','waktu':'".strtotime($_POST['waktu'])."','trans_time':'".date('Y-m-d H:i:s')."'});";
+        $response = $db->execute($inset);
+        header('Location: bencana.php');
+    }
+    
+
+    $collection = $db->Parameter;
+    $arr = array("id"=>$_SESSION['id-jenis']);
+    $cursor = $collection->find($arr);
+    $i=0;
+    foreach ($cursor as $document) {
+        $param[$i]=$document['param'];
+        $i++;
+    }
+    $collection = $db->Sequence;
+    $arr = array("id-bencana"=>$_SESSION['id-bencana']);
+    $cursor = $collection->find($arr);
+    $j=0;
+    foreach ($cursor as $document) {
+        for($x=0;$x<$i;$x++){
+            $value[$param[$x]]=$document[$param[$x]];
+        }
+        $value['coords']=$document['coords'];
+        $j++;
+    }
     
 ?>
 <!DOCTYPE html>
@@ -32,87 +83,91 @@
 
 <!-- Theme skin -->
 <link href="skins/default.css" rel="stylesheet" />
-<style type="text/css">
-        body {
-            height: 100%;
-            background: url('img/ticks.png');
-
-        }
-
-        .box h3{
-            text-align:center;
-            position:relative;
-            top:80px;
-        }
-        .box {
-            width:70%;
-            height:200px;
-            background:#FFF;
-            margin:40px auto;
-            border: 5px;
-        }
-
-
-        #mapCanvas {
-            width: auto;
-            height: 400px;
-
-        }
-        .tengah { float: none; margin-left: auto; margin-right: auto; }
-        .boxcari { width: 400px }
-
-        footer {
-              color: #666;
-              background: #222;
-              padding: 17px 0 18px 0;
-              border-top: 1px solid #000;
-          }
-          footer a {
-              color: #999;
-          }
-          footer a:hover {
-              color: #efefef;
-          }
-          .wrapper {
-              min-height: 100%;
-              height: auto !important;
-              height: 100%;
-              margin: 0 auto -63px;
-          }
-          .push {
-              height: 63px;
-          }
-          /* not required for sticky footer; just pushes hero down a bit */
-          .wrapper > .container {
-              padding-top: 60px;
-          }
-        .profilpic {
-
-            -moz-box-shadow: 0 0 5px 5px #888;
-            -webkit-box-shadow: 0 0 5px 5px#888;
-            box-shadow: 0 0 5px 5px #888;
-
-        }
-
-        .map_canvas { 
-            width: 100%; 
-            height: 400px; 
-            margin: 10px 0 10px 0;
-            border: 10px solid #FFF;
-        }
-
-        .map_canvas:after{
-            content: "Type in an address in the input above.";
-            padding-top: 170px;
-            display: block;
-            text-align: center;
-            font-size: 2em;
-            color: #999;
-        }
-    </style>
-    <script type="text/javascript" src="js/jquery.js"></script>
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+     
+    <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+     <script type="text/javascript" src="js/jquery.js"></script>
+     
+    <script type="text/javascript" src="js/polygon.min.js"></script>
+     
+    <script type="text/javascript">
+    $(function(){
+         // create map
+         var Lokasi=new google.maps.LatLng(<?php echo $lat.",".$lng; ?>);
+         
+ 
+         var myOptions = {
+            zoom: 12,
+            center: Lokasi,
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+         }
+         
+         map = new google.maps.Map(document.getElementById('main-map'), myOptions);
+         
+         var marker = new google.maps.Marker({
+            position: Lokasi,
+            map: map,
+            title: '<?php echo $lokasi; ?>'
+          });
+          <?php if(isset($value['Radius'])){?>
+          var myCity = new google.maps.Circle({
+        center:Lokasi,
+        radius:<?php echo $value['Radius']*1000; ?>,
+        strokeColor:"#0000FF",
+        strokeOpacity:0.8,
+        strokeWeight:2,
+        fillColor:"#0000FF",
+        fillOpacity:0.4,
+        clickable:false
+        });
+        myCity.setMap(map);
+          <?php } ?>
+         
+         // attached a polygon creator drawer to the map
+         var creator = new PolygonCreator(map);
+         
+         // reset button
+         $('#reset').click(function(){
+                creator.destroy();
+                creator=null;              
+                creator=new PolygonCreator(map);               
+         });   
+ 
+         // set polygon data to the form hidden field
+         $('#map-form').submit(function () {
+            $('#map-coords').val(creator.showData());
+         });
+         
+         <?php if ($j>0){ ?>
+          // create
+         var polygonCoord = [<?php
+                                $res = substr($value['coords'], 1, -1);
+                                $coord = explode(")(", $res);
+                                $x=  count($coord);
+                                for($n=0;$n<$x;$n++){
+                                    echo 'new google.maps.LatLng('.$coord[$n].')';
+                                    if($n<$x-1){
+                                        echo ",";
+                                    }
+                                }
+                                
+                                ?>];
+                        polygon = new google.maps.Polygon({
+                               paths: polygonCoord,
+                               strokeColor: "#00FF00",
+                               strokeOpacity: 0.8,
+                               strokeWeight: 2,
+                               fillColor: "#00FF00",
+                               fillOpacity: 0.35,
+                               clickable : false   
+                               });
+                        polygon.setMap(map);
+                               
+         <?php } ?>
+         
+    });
+    </script>
     <script type="text/javascript" src="js/main.js"></script>
-    <script src="http://maps.googleapis.com/maps/api/js?sensor=false&amp;libraries=places"></script>
 
 <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
 <!--[if lt IE 9]>
@@ -135,7 +190,7 @@
                     <div class="col-lg-12">
                         <ul class="breadcrumb">
                             <li><a href="index.php"><i class="fa fa-home"></i></a><i class="icon-angle-right"></i></li>
-                            <li class="active">Letusan Gunung</li>
+                            <li class="active">Tambah Sequence</li>
                         </ul>
                     </div>
                 </div>
@@ -149,31 +204,38 @@
                       
                     </div>
                     <div class="col-lg-8">
-                        <h3>Letusan Gunung</h3>
-                        <table class="table table-bordered">
-                            <tr>
-                                <th>ID</th>
-                                <th>Nama</th>
-                                <th>Lokasi</th>
-                                <th>Radius</th>
-                                <th>Aksi</th>
-                            </tr>
-                        <?php
-                            $i=0;
-                            foreach ($cursor as $document) {
-                                echo "<tr>";
-                                echo "<td>".$document['id'],"</td>";
-                                echo "<td>".$document['id-bencana'],"</td>";
-                                echo "<td>".$document['Lokasi'],"</td>";
-                                echo "<td>".$document['Radius'],"</td>";
-                                echo "<form action=\"\" method=\"POST\" enctype=\"multipart/form-data\">";
-                                echo "<input type=\"hidden\" name=\"id\" value=\"".$document['id'],"\" />";
-                                echo "<td><input type=\"submit\" name=\"view\" class=\"btn btn-green\" value=\"View\" /></td>";
-                                echo "</form>";
-                                echo "</tr>";
-                            }
-                        ?>
-                    </table>
+                        <h3><?php echo $nama; ?></h3>
+                        <form action="" method="POST" enctype="multipart/form-data" id="map-form">
+                            <?php
+                                $x = count($param);
+                                $text="";
+                                for($i=0;$i<$x;$i++){
+                                    echo "<input type=\"hidden\" name=\"param[]\" value=".$param[$i]." />";
+                                }
+                                for($i=0;$i<$x;$i++){
+                                    if($j>0){
+                                        $text=$value[$param[$i]];
+                                    }
+                                    echo "<div class=\"form-group\">";
+                                    echo "<label for=\"".$param[$i]."\">".$param[$i]."</label>";
+                                    echo "<input type=\"text\" name=\"".$param[$i]."\" id=\"".$param[$i]."\" class=\"form-control\" placeholder=\"".$param[$i]."\" value=\"".$text."\">";
+                                    echo "</div>";
+                                }
+                            ?>
+                            <div id="main-map" style="height: 600px;"></div>
+                            <input type="hidden" name="coords" id="map-coords" value=""/>
+                            <input type="button" class="btn btn-blue" value="Reset Map" id="reset"/>
+                            <div class="form-group">
+                                <label for="datetimepicker_dark">Waktu</label>
+                                <input type="text" name="waktu" id="datetimepicker_dark" class="form-control" autocomplete="off"/>
+                            </div> 
+                            <input type="submit" name="simpan" class="btn btn-green" value="Simpan"/>
+
+                            
+                            
+                            
+                            
+                        </form>
                     </div>
                     <div class="col-lg-2"></div>
 		</div>
