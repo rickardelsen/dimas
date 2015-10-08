@@ -12,7 +12,7 @@
         $param = $_POST['p'];
         for($i=0;$i<$x;$i++){
             if($param[$i]!=""){
-                $inset = "db.Parameter.insert({'id':'".$id."','param':'".$param[$i]."'});";
+                $inset = "db.Parameter.insert({'id':'".$id."','param':'".str_replace(" ", "_", $param[$i])."'});";
                 $response = $db->execute($inset);
             }
         }

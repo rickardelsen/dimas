@@ -1,11 +1,12 @@
 <?php
     session_start();
-    if(!isset($_POST['submit'])){
+    date_default_timezone_set("Asia/Jakarta");
+    if(!isset($_GET['id'])){
         header('Location: predictable.php');
     }
     $m = new MongoClient(); // connect
     $db = $m->selectDB("dimas");
-    echo $_POST['id'];
+    echo $_GET['id'];
 
 ?>
 <!DOCTYPE html>
@@ -45,7 +46,7 @@
       var Time;
       <?php
         $collection = $db->Sequence;
-        $arr = array("id-bencana"=>$_POST['id']);
+        $arr = array("id-bencana"=>$_GET['id']);
         $cursor = $collection->find($arr);
         $i=0;
         
@@ -66,15 +67,15 @@
                 }
             }
             echo "];";
-            list($trash,$time[$i])=explode(" ",$document['waktu']);
+            $time[$i]=$document['waktu'];
             $i++;
         }
         echo "var data = [";
         for($j=0;$j<$i;$j++){
             if($j==0){
-                echo "{time: '".$time[$j].":00', bermudaTriangle:triangleCoords}";
+                echo "{time: '".date("H:i:s",$time[$j])."', bermudaTriangle:triangleCoords}";
             }else{
-                echo "{time: '".$time[$j].":00', bermudaTriangle:triangleCoords".$j."}";
+                echo "{time: '".date("H:i:s",$time[$j])."', bermudaTriangle:triangleCoords".$j."}";
             }
             
             if($j<$i-1){
@@ -94,7 +95,7 @@
           zoom: 12,
           <?php
             $collection1 = $db->Bencana;
-            $arr1 = array("id"=>$_POST['id']);
+            $arr1 = array("id"=>$_GET['id']);
             $cursor1 = $collection1->find($arr1);
             $i=0;
         

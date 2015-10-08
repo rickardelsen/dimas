@@ -217,8 +217,8 @@
                                         $text=$value[$param[$i]];
                                     }
                                     echo "<div class=\"form-group\">";
-                                    echo "<label for=\"".$param[$i]."\">".$param[$i]."</label>";
-                                    echo "<input type=\"text\" name=\"".$param[$i]."\" id=\"".$param[$i]."\" class=\"form-control\" placeholder=\"".$param[$i]."\" value=\"".$text."\">";
+                                    echo "<label for=\"".$param[$i]."\">".str_replace("_", " ", $param[$i])."</label>";
+                                    echo "<input type=\"text\" name=\"".$param[$i]."\" id=\"".$param[$i]."\" class=\"form-control\" placeholder=\"".str_replace("_", " ", $param[$i])."\" value=\"".$text."\">";
                                     echo "</div>";
                                 }
                             ?>

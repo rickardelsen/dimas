@@ -1,16 +1,6 @@
 <?php
     session_start();
-    if(!isset($_POST['submit']) && !isset($_SESSION['id-jenis'])){
-        header('Location: predictable.php');
-    }
-    else{
-        if(isset($_POST['submit'])){
-            $_SESSION['id-jenis']=$_POST['id'];
-            $id = $_POST['id'];
-        }else{
-            $id = $_SESSION['id-jenis'];
-        }
-    }
+    
     $m = new MongoClient(); // connect
     $db = $m->selectDB("dimas");
     
@@ -24,7 +14,7 @@
         $param = $_POST['p'];
         for($i=0;$i<$x;$i++){
             if($param[$i]!=""){
-                $inset = "db.Parameter.insert({'id':'".$id."','param':'".$param[$i]."'});";
+                $inset = "db.Parameter.insert({'id':'".$id."','param':'".str_replace(" ", "_", $param[$i])."'});";
                 $response = $db->execute($inset);
             }
         }

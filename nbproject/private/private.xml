@@ -3,7 +3,6 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/var/www/html/dimas/add-usequence.php</file>
             <file>file:/var/www/html/dimas/bencana.php</file>
             <file>file:/var/www/html/dimas/Menu.php</file>
             <file>file:/var/www/html/dimas/usequence.php</file>
@@ -13,6 +12,9 @@
             <file>file:/var/www/html/dimas/add-sequence.php</file>
             <file>file:/var/www/html/dimas/sequence.php</file>
             <file>file:/var/www/html/dimas/add-unpredictable.php</file>
+            <file>file:/var/www/html/dimas/add-usequence.php</file>
+            <file>file:/var/www/html/dimas/test.php</file>
+            <file>file:/var/www/html/dimas/infophp.php</file>
             <file>file:/var/www/html/dimas/unpredictable.php</file>
         </group>
     </open-files>
